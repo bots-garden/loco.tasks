@@ -33,12 +33,41 @@ func GetTasks() map[string] models.TaskRecord {
 	return tasksMap
 }
 
+// GetTasksOfGroup → get tasks of a group
+func GetTasksOfGroup(group string) map[string] models.TaskRecord {
+	filteredList := make(map[string] models.TaskRecord)
+	for keyTask, taskRecord := range tasksMap {
+		if taskRecord.Group == group {
+			filteredList[keyTask] = taskRecord
+		}
+	}
+	return filteredList
+}
+
+// DeleteTasksOfGroup ...
+func DeleteTasksOfGroup(group string) map[string] models.TaskRecord {
+	for keyTask, taskRecord := range tasksMap {
+		if taskRecord.Group == group {
+			delete(tasksMap, keyTask)
+		}
+	}
+	return tasksMap
+}
+
+
+
 
 // SaveTasks ...
 func SaveTasks() {
 	// save map to json file
-	jsonString, _ := json.MarshalIndent(tasksMap, "", "  ")
-	_ = ioutil.WriteFile(storage, jsonString, 0644)
+	jsonString, err := json.MarshalIndent(tasksMap, "", "  ")
+	if err != nil {
+		log.Println(err)
+	}
+	err = ioutil.WriteFile(storage, jsonString, 0644)
+	if err != nil {
+		log.Println(err)
+	}
 }
 // TODO: handle errors correctly
 

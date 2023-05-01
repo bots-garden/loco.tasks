@@ -58,6 +58,8 @@ func main() {
 					newEnv := append(os.Environ(), taskRecord.Env...)
 					cmd.Env = newEnv
 
+					log.Println("🚙", cmd.Args)
+
 					err := cmd.Start()
 
 					if err != nil {
@@ -65,12 +67,15 @@ func main() {
 						taskRecord.CurrentStatus = status.Failed
 						taskRecord.StatusDescription = err.Error()
 						taskRecord.FailedAt = time.Now()
+
+						log.Println("🚗", err.Error())
 					} else {
 						// update the status
 						taskRecord.CurrentStatus = status.Started
 						taskRecord.StatusDescription = ""
 						taskRecord.StartedAt = time.Now()
 						taskRecord.Pid = cmd.Process.Pid
+						taskRecord.Cmd = cmd
 					}
 					// update the task
 					data.SetTask(keyTask, taskRecord)
@@ -110,6 +115,7 @@ func main() {
 				}
 			}
 			data.SaveTasks()
+			
 			time.Sleep(5 * time.Second)
 		}
 	}()
@@ -120,11 +126,14 @@ func main() {
 	locoTaskEndPoint := helpers.GetEnv("LOCO_TASKS_ENDPOINT", "tasks")
 
 	// 🚧 work in progress
-	httpServer.POST("/admin/"+locoTaskEndPoint+"/registration", handlers.RegisterTask)
-	
-	// TODO: kill a process
+	httpServer.POST("/admin/"+locoTaskEndPoint+"/start", handlers.CreateTask)
 
+	
 	httpServer.GET("/admin/"+locoTaskEndPoint+"/list", handlers.GetTasks)
+	httpServer.GET("/admin/"+locoTaskEndPoint+"/list/:group", handlers.GetTasksOfGroup)
+	
+	httpServer.DELETE("/admin/"+locoTaskEndPoint+"/processes/:group", handlers.StopProcessesOfGroup)
+
 
 	if helpers.GetEnv("LOCO_TASKS_CRT", "") != "" {
 		httpServer.RunTLS(

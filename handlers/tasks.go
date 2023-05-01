@@ -4,6 +4,7 @@ package handlers
 import (
 	"loco-tasks/data"
 	"loco-tasks/models"
+	"loco-tasks/status"
 	"log"
 	"net/http"
 	"time"
@@ -21,17 +22,29 @@ func GetTasks(c *gin.Context) {
 	c.JSON(http.StatusAccepted, &tasksList)
 }
 
-/*
+// GetTasksOfGroup is a handler for /admin/tasks/list/:group
+//   - It returns a list of all tasks for a group
+//   - Usage:
+//     curl http://localhost:8080/admin/tasks/list/:group
+//     curl http://localhost:7070/admin/tasks/list/hey-group
+func GetTasksOfGroup(c *gin.Context) {
+	tasksList := data.GetTasksOfGroup(c.Param("group"))
+	c.JSON(http.StatusAccepted, &tasksList)
+}
 
- */
+// DeleteTasksOfGroup is a handler for /admin/tasks/list/:group
+func DeleteTasksOfGroup(c *gin.Context) {
+	tasksList := data.DeleteTasksOfGroup(c.Param("group"))
+	c.JSON(http.StatusAccepted, &tasksList)
+}
 
 /*
-	RegisterTask is a handler for /admin/tasks/registration (POST)
+CreateTask is a handler for /admin/tasks/registration (POST)
 
 # It creates a task record in the tasks map
 
 Usage:
-curl -X POST http://localhost:7070/admin/tasks/registration \
+curl -X POST http://localhost:7070/admin/tasks/start \
 -H 'Content-Type: application/json; charset=utf-8' \
 -d @- << EOF
 
@@ -45,7 +58,9 @@ curl -X POST http://localhost:7070/admin/tasks/registration \
 
 EOF
 */
-func RegisterTask(c *gin.Context) {
+
+// CreateTask is a handler for /admin/tasks/start
+func CreateTask(c *gin.Context) {
 	task := models.Task{}
 
 	if err := c.BindJSON(&task); err != nil {
@@ -56,6 +71,7 @@ func RegisterTask(c *gin.Context) {
 	log.Println("📝", task)
 
 	taskRecord := models.TaskRecord{
+		Group:       task.Group,
 		Name:        task.Name,
 		Description: task.Description,
 		Path:        task.Path,
@@ -67,5 +83,37 @@ func RegisterTask(c *gin.Context) {
 	data.SetTask(uuid.New().String(), taskRecord)
 
 	c.JSON(http.StatusAccepted, &taskRecord)
+
+}
+
+// StopProcessesOfGroup stops all the processes of a given task
+func StopProcessesOfGroup(c *gin.Context) {
+
+	//tasksList := data.GetTasksOfGroup(c.Param("group"))
+
+	for keyTask, taskRecord := range data.GetTasksOfGroup(c.Param("group")) {
+		if taskRecord.CurrentStatus == status.Started {
+			// kill process
+			log.Println("🔥", "killing", keyTask, taskRecord.Pid)
+
+			err := taskRecord.Cmd.Process.Kill()
+
+			//err := syscall.Kill(taskRecord.Pid, syscall.Signal(syscall.SIGTERM))
+			if err != nil {
+				log.Println("💥", err)
+			}
+			data.RemoveTask(keyTask)
+		}
+
+		//taskRecord.Cmd.Process.Pid
+
+		//taskRecord.Cmd.Process.Kill()
+		//data.RemoveTask(keyTask)
+
+	}
+
+	//c.JSON(http.StatusAccepted, &tasksList)
+	c.JSON(http.StatusAccepted, "")
+
 
 }

@@ -10,14 +10,13 @@
       "editor.lineHighlightBackground": "#c6d5e4"
     }
   },
-  "go.useLanguageServer": true,
+  //"go.useLanguageServer": true,
   "go.toolsGopath": "/home/ubuntu/go/",
   "go.gopath": "/home/ubuntu/go/",
   "go.toolsEnvVars": {
     "GOOS": "linux",
     "GOARCH": "arm64",
   },
-  "java.configuration.updateBuildConfiguration": "automatic",
   "files.autoSave": "afterDelay",
   "files.autoSaveDelay": 1000,
   "keyboard.layout": "com.apple.keylayout.French",

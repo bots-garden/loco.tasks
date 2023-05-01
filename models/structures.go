@@ -3,6 +3,7 @@ package models
 
 import (
 	"loco-tasks/status"
+	"os/exec"
 	"time"
 )
 
@@ -13,6 +14,7 @@ import (
 
 // Task ...
 type Task struct {
+	Group       string   `json:"group"`
 	Name        string   `json:"name"`
 	Description string   `json:"description"`
 	Path        string   `json:"path"`
@@ -26,6 +28,7 @@ type Task struct {
 
 // TaskRecord ...
 type TaskRecord struct {
+	Group             string        `json:"group"`
 	Name              string        `json:"name"`
 	Description       string        `json:"description"`
 	CurrentStatus     status.Status `json:"currentStatus"`
@@ -40,6 +43,7 @@ type TaskRecord struct {
 	Path              string        `json:"path"`
 	Args              []string      `json:"args"`
 	Env               []string      `json:"env"`
+	Cmd               *exec.Cmd		`json:"-"`
 }
 
 // TaskError ...
